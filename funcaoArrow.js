@@ -38,3 +38,5 @@ console.log(numerosDobrados); // Saída: [2, 4, 6, 8, 10]
 //Chamando a função e exibindo o resultado no console   
 
 console.log(saudacao("João", 25)); // Saída: Olá, João! Você tem 25 anos.  
+
+
