@@ -8,7 +8,6 @@ class Carro {
     }
 }
 
-
 class carroLuxo extends Carro {
 
     constructor(motor, portas,arcondicionado, cor, marca, ano) {
