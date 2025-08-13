@@ -18,11 +18,16 @@ class carroLuxo extends Carro {
     };
     
     ligarArCondicionado() {
+
+        let descricao = " ";
+
         if (this.arcondicionado) {
-            return "Ar-condicionado já está ligado!";
+           descricao += "Ar-condicionado já está ligado!";
         }else{
-            return "Carro não tem ar-condicionado.  ";
+            descricao += "Carro não tem ar-condicionado.  ";
         }
+       
+        return descricao;
     }
    
 }
