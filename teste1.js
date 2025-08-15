@@ -14,4 +14,6 @@ if(sucesso){
     });
 }
 
-exemploOperacaoAssincrono().then((resolve)+> {console.log(resolve)}).catch((reject)=>{console.log(reject)})
+exemploOperacaoAssincrono()
+.then((resultado)=>{console.log(resultado)})
+.catch((erro)=>{console.log(erro)})
