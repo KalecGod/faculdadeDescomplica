@@ -13,3 +13,9 @@ if(sucesso){
   },2000)
     });
 }
+
+
+exemploOperacaoAssincrono().then((resultado)=> {console.log(resultado)}
+).catch ((erro)=>{console.log(erro)});
+
+
