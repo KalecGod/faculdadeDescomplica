@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestão de Cliente & Motos — UI Realista</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937;
+      --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --brand:#60a5fa; --input:#0a1224;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; background:radial-gradient(1200px 800px at 20% -10%, rgba(96,165,250,.15), transparent 60%), radial-gradient(800px 600px at 120% 10%, rgba(34,197,94,.10), transparent 60%), var(--bg); color:var(--text)}
+    header{position:sticky; top:0; z-index:20; background:rgba(15,23,42,.8); backdrop-filter:saturate(130%) blur(8px); border-bottom:1px solid var(--border)}
+    .wrap{max-width:1180px; margin:0 auto; padding:18px 16px; display:flex; align-items:center; gap:14px}
+    .brand{display:flex; gap:10px; align-items:center}
+    .badge{font-size:12px; color:var(--muted); border:1px solid var(--border); padding:2px 8px; border-radius:999px}
+    h1{font-size:clamp(18px,3vw,24px); margin:0}
+
+    main{max-width:1180px; margin:20px auto; padding:0 16px; display:grid; gap:16px; grid-template-columns: 1.1fr .9fr}
+    @media (max-width: 980px){ main{grid-template-columns:1fr} }
+
+    .card{background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(14,22,36,.9)); border:1px solid var(--border); border-radius:18px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .card h2{margin:.2rem 0 1rem; font-size:18px}
+    .sub{color:var(--muted); font-size:12.8px}
+
+    .row{display:grid; gap:10px}
+    .row.cols-2{grid-template-columns:1fr 1fr}
+    .row.cols-3{grid-template-columns:repeat(3,1fr)}
+    .row.cols-4{grid-template-columns:repeat(4,1fr)}
+    @media (max-width: 860px){ .row.cols-2,.row.cols-3,.row.cols-4{grid-template-columns:1fr} }
+
+    .field{display:flex; flex-direction:column; gap:6px}
+    label{font-size:12px; color:var(--muted)}
+    input, select{background:var(--input); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:12px; outline:none}
+    input:focus, select:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(96,165,250,.15)}
+    .hint{font-size:12px; color:var(--muted)}
+
+    .actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    button{appearance:none; border:none; cursor:pointer; padding:10px 14px; border-radius:12px; font-weight:600}
+    .btn{background:var(--brand); color:#081422}
+    .ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
+    .ok{background:var(--ok); color:#062014}
+    .warn{background:var(--warn); color:#1a1203}
+    .danger{background:var(--err); color:#2b0707}
+    .pill{display:inline-flex; align-items:center; gap:6px; padding:.25rem .6rem; border-radius:999px; border:1px solid var(--border); color:var(--muted); font-size:12px}
+
+    table{width:100%; border-collapse:collapse; margin-top:8px}
+    th, td{border-bottom:1px solid var(--border); padding:10px 8px; text-align:left; vertical-align:top}
+    th{color:var(--muted); font-weight:600}
+    tbody tr:hover{background:rgba(148,163,184,.08)}
+
+    .log{white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12.5px; background:#070d1a; border:1px dashed var(--border); padding:10px; border-radius:10px; color:#c7d2fe}
+
+    .toast{position:fixed; right:16px; bottom:16px; display:grid; gap:8px; z-index:40}
+    .toast .t{padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0a1326; color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,.35)}
+
+    dialog{border:none; border-radius:16px; padding:0; background:#0f172a; color:var(--text); width:min(520px, 92vw)}
+    dialog::backdrop{background:rgba(0,0,0,.55)}
+    .modal-head{padding:14px 16px; border-bottom:1px solid var(--border)}
+    .modal-body{padding:16px}
+    .modal-foot{padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end}
+
+    .result-line{display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px; border:1px solid var(--border); border-radius:12px}
+    .kbd{font-family:ui-monospace, Menlo, Consolas, monospace; font-size:12px; border:1px solid var(--border); border-bottom-width:2px; background:#0a1224; border-radius:6px; padding:0 6px}
+    .muted{color:var(--muted)}
+    .highlight{outline:2px solid var(--brand); outline-offset:2px; border-radius:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 20l-2-3H3l3-5-3-5h4l2-3 3 5h6l-3 5 3 5h-6l-3 6z" fill="#60a5fa" opacity=".25"/><path d="M7.5 5h2L12 9h5l-2.5 4L17 17h-5l-2.5 5-2-3H4l2.5-4L4 9h3.5L9.5 6l-2-1z" stroke="#60a5fa" stroke-width="1.2" fill="none"/></svg>
+        <h1>Gestão de Cliente & Motos</h1>
+        <span class="badge">UI realista • validações • persistência</span>
+      </div>
+      <span id="status" class="pill" style="margin-left:auto">Sem cliente</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Coluna esquerda -->
+    <section class="card">
+      <h2>Dados do Cliente</h2>
+      <p class="sub">CPF e endereço são apenas para exibição local; nada é enviado para a rede.</p>
+      <form id="formCliente" class="row cols-2" autocomplete="off">
+        <div class="field"><label for="nome">Nome completo</label><input id="nome" placeholder="Ex.: Adalberto Carlos" required></div>
+        <div class="field"><label for="idade">Idade</label><input id="idade" type="number" min="0" step="1" required></div>
+        <div class="field"><label for="cpf">CPF <span class="hint">(somente números)</span></label><input id="cpf" inputmode="numeric" maxlength="14" placeholder="70520754409"></div>
+        <div class="field"><label for="endereco">Endereço</label><input id="endereco" placeholder="Rua, número, bairro"></div>
+        <div class="actions">
+          <button class="btn" type="submit">Salvar cliente</button>
+          <button class="ghost" type="button" id="btnSeed">Carregar exemplo</button>
+          <button class="ghost" type="button" id="btnLimpar">Limpar tudo</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Resumo</h2>
+      <div class="sub">Descrição automática, console de eventos e total de motos.</div>
+      <div style="margin-top:10px"><strong>Descrição</strong><pre id="outDesc" class="log">(sem cliente)</pre></div>
+      <div style="margin-top:10px"><strong>Console</strong><pre id="outLog" class="log">Pronto…</pre></div>
+    </section>
+
+    <!-- Adicionar / Atualizar -->
+    <section class="card">
+      <h2>Adicionar moto</h2>
+      <form id="formAddMoto" class="row cols-4" autocomplete="off">
+        <div class="field"><label for="marca">Marca</label><input id="marca" required placeholder="Honda"/></div>
+        <div class="field"><label for="modelo">Modelo</label><input id="modelo" required placeholder="Titan 160"/></div>
+        <div class="field"><label for="placa">Placa</label><input id="placa" required placeholder="ABC-1234 ou ABC1D23"/></div>
+        <div class="field"><label for="ano">Ano fabricação</label><input id="ano" type="number" min="1900" max="2100" required /></div>
+        <div class="field" style="grid-column: span 2"><label for="cor">Cor</label><input id="cor" required placeholder="Vermelha"/></div>
+        <div class="actions" style="grid-column: span 4">
+          <button class="ok" type="submit">Adicionar moto</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Atualizar moto</h2>
+      <form id="formUpdateMoto" class="row cols-4" autocomplete="off">
+        <div class="field"><label for="placaAtual">Placa atual</label><input id="placaAtual" required placeholder="Placa existente"/></div>
+        <div class="field"><label for="novaPlaca">Nova placa <span class="hint">(opcional)</span></label><input id="novaPlaca" placeholder="Se for trocar"/></div>
+        <div class="field"><label for="novoModelo">Modelo <span class="hint">(opcional)</span></label><input id="novoModelo"/></div>
+        <div class="field"><label for="novaMarca">Marca <span class="hint">(opcional)</span></label><input id="novaMarca"/></div>
+        <div class="field"><label for="novoAno">Ano <span class="hint">(opcional)</span></label><input id="novoAno" type="number" min="1900" max="2100"/></div>
+        <div class="field" style="grid-column: span 2"><label for="novaCor">Cor <span class="hint">(opcional)</span></label><input id="novaCor"/></div>
+        <div class="actions" style="grid-column: span 4"><button class="warn" type="submit">Aplicar atualização</button></div>
+      </form>
+    </section>
+
+    <!-- Consulta de Placa (local + externa real) -->
+    <section class="card" style="grid-column: span 2">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+        <h2 style="margin:0">Consulta de placa</h2>
+        <span class="pill">Local + Externa (API)</span>
+      </div>
+
+      <!-- Config de API -->
+      <details style="margin-top:8px">
+        <summary class="muted">Configurar fonte externa (API)</summary>
+        <div class="row cols-4" style="margin-top:8px">
+          <div class="field" style="grid-column: span 2">
+            <label for="apiUrl">URL base</label>
+            <input id="apiUrl" placeholder="https://api.exemplo.com/veiculos?placa={PLACA}">
+          </div>
+          <div class="field">
+            <label for="apiMethod">Método</label>
+            <select id="apiMethod">
+              <option value="GET" selected>GET</option>
+              <option value="POST">POST</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="apiTimeout">Timeout (ms)</label>
+            <input id="apiTimeout" type="number" min="300" value="7000">
+          </div>
+        </div>
+        <div class="row cols-2">
+          <div class="field">
+            <label for="apiHeaders">Headers (um por linha, chave: valor)</label>
+            <input id="apiHeaders" placeholder="Authorization: Bearer SEU_TOKEN\nAccept: application/json">
+          </div>
+          <div class="field">
+            <label for="apiBody">Body (POST) — use {PLACA}</label>
+            <input id="apiBody" placeholder='{"placa": "{PLACA}"}'>
+          </div>
+        </div>
+        <div class="hint">Dica: use <code>{PLACA}</code> para injetar a placa no URL ou corpo. Ex.: <code>.../consultas/{PLACA}</code> ou <code>?placa={PLACA}</code>.</div>
+      </details>
+
+      <div class="row cols-4" style="margin-top:8px">
+        <div class="field" style="grid-column: span 2"><label for="placaConsulta">Placa</label><input id="placaConsulta" placeholder="Digite a placa"/></div>
+        <div class="actions" style="align-self:end">
+          <button id="btnConsultar" class="btn" type="button">Consultar</button>
+          <button id="btnLimparConsulta" class="ghost" type="button">Limpar</button>
+          <button id="btnDemo" class="ghost" type="button">Carregar demo</button>
+          <input id="fileJson" type="file" accept="application/json" style="display:none" />
+          <button id="btnImportar" class="ghost" type="button">Importar JSON…</button>
+        </div>
+      </div>
+
+      <div id="resultadoConsulta" style="margin-top:10px; display:grid; gap:10px"></div>
+      <pre id="rawJson" class="log" style="display:none; margin-top:8px"></pre>
+      <div class="hint" style="margin-top:6px">Busca local em <span class="kbd">tempo real</span> + consulta externa via <code>fetch</code> (CORS deve ser permitido no servidor).</div>
+    </section>
+
+    <!-- Tabela -->
+    <section class="card" style="grid-column: span 2">
+      <div style="display:flex; align-items:center; justify-content:space-between">
+        <h2 style="margin:0">Motos do cliente</h2>
+        <span id="contador" class="pill">0 moto(s)</span>
+      </div>
+      <table>
+        <thead><tr><th>Marca</th><th>Modelo</th><th>Placa</th><th>Ano</th><th>Cor</th><th style="width:220px">Ações</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Modal excluir -->
+  <dialog id="dlgDel">
+    <div class="modal-head"><strong>Remover moto</strong></div>
+    <div class="modal-body">
+      Tem certeza que deseja remover a moto <code id="delPlaca">(placa)</code>? Esta ação não pode ser desfeita.
+    </div>
+    <div class="modal-foot">
+      <button class="ghost" id="btnCancelDel" type="button">Cancelar</button>
+      <button class="danger" id="btnConfirmDel" type="button">Remover</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ======== Dom helpers ========
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+    const fmtTime = () => new Date().toLocaleTimeString();
+    const toastBox = document.getElementById('toast');
+    function toast(msg){
+      const el = document.createElement('div'); el.className='t'; el.textContent = msg; toastBox.appendChild(el);
+      setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(6px)'; }, 2800);
+      setTimeout(()=> el.remove(), 3500);
+    }
+
+    // ======== Classes (seu domínio) ========
+    class Motos {
+      constructor(modelo, marca, placa, anoFabricacao, cor) {
+        this.modelo = modelo; this.marca = marca; this.placa = placa; this.anoFabricacao = anoFabricacao; this.cor = cor;
+      }
+      get getModelo(){return this.modelo} get getMarca(){return this.marca} get getPlaca(){return this.placa}
+      get getAnoFabricacao(){return this.anoFabricacao} get getCor(){return this.cor}
+      set setModelo(v){this.modelo=v} set setMarca(v){this.marca=v} set setPlaca(v){this.placa=v}
+      set setAnoFabricacao(v){this.anoFabricacao=v} set setCor(v){this.cor=v}
+    }
+
+    class Cliente {
+      #motos = []; #placas = new Set();
+      constructor(nomeCompleto, idade, cpf, endereco, motos = []){
+        this.nomeCompleto = nomeCompleto; this.idade = idade; this.cpf = cpf; this.endereco = endereco;
+        if(Array.isArray(motos)) motos.forEach(m => this.addMoto(m));
+      }
+      static #normalizePlaca(placa){ return String(placa).toUpperCase().replace(/\s+/g,''); }
+      static #placaValida(placa){
+        const p = Cliente.#normalizePlaca(placa);
+        const antigo = /^[A-Z]{3}-?\d{4}$/; // ABC-1234
+        const mercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/; // ABC1D23
+        return antigo.test(p) || mercosul.test(p);
+      }
+      static normalize(placa){ return Cliente.#normalizePlaca(placa); }
+      static valida(placa){ return Cliente.#placaValida(placa); }
+
+      addMoto(m){
+        if(!(m instanceof Motos)) throw new TypeError('addMoto: precisa ser instância de Motos.');
+        const p = Cliente.#normalizePlaca(m.getPlaca);
+        if(!Cliente.#placaValida(p)) throw new Error(`Placa inválida (${m.getPlaca}).`);
+        if(this.#placas.has(p)) throw new Error(`Já existe moto com a placa ${m.getPlaca}.`);
+        this.#motos.push(m); this.#placas.add(p); return this;
+      }
+      getMotos(){ return [...this.#motos]; }
+      listarMotosResumo(){ return this.#motos.map(m => `${m.getMarca} ${m.getModelo} (${m.getPlaca})`); }
+      buscarMotoPorPlaca(placa){ const alvo = Cliente.#normalizePlaca(placa); return this.#motos.find(m => Cliente.#normalizePlaca(m.getPlaca)===alvo) ?? null; }
+      atualizarMoto(placaAtual, dados={}){
+        const moto = this.buscarMotoPorPlaca(placaAtual); if(!moto) return false;
+        if(dados.novaPlaca){
+          const novaNorm = Cliente.#normalizePlaca(dados.novaPlaca);
+          if(!Cliente.#placaValida(novaNorm)) throw new Error(`atualizarMoto: placa inválida (${dados.novaPlaca}).`);
+          const atualNorm = Cliente.#normalizePlaca(moto.getPlaca);
+          if(novaNorm!==atualNorm && this.#placas.has(novaNorm)) throw new Error(`atualizarMoto: já existe moto com a placa ${dados.novaPlaca}.`);
+          this.#placas.delete(atualNorm); moto.setPlaca = dados.novaPlaca; this.#placas.add(novaNorm);
+        }
+        if(dados.modelo) moto.setModelo = dados.modelo;
+        if(dados.marca) moto.setMarca = dados.marca;
+        if(dados.anoFabricacao) moto.setAnoFabricacao = dados.anoFabricacao;
+        if(dados.cor) moto.setCor = dados.cor;
+        return true;
+      }
+      removerMoto(placa){ const alvo = Cliente.#normalizePlaca(placa); const i = this.#motos.findIndex(m=>Cliente.#normalizePlaca(m.getPlaca)===alvo); if(i===-1) return false; this.#placas.delete(alvo); this.#motos.splice(i,1); return true; }
+      *[Symbol.iterator](){ for(const m of this.#motos) yield m }
+      descricao(){ if(!this.#motos.length) return `${this.nomeCompleto} não possui motos cadastradas.`; const lista=this.listarMotosResumo().join(', '); return `${this.nomeCompleto} possui ${this.#motos.length} moto(s): ${lista}.`; }
+    }
+
+    // ======== Estado / Persistência ========
+    let cliente = null; const LS_KEY = 'cliente_motos_v1';
+    function save(){ if(!cliente) return; const data = {nome:cliente.nomeCompleto, idade:cliente.idade, cpf:cliente.cpf, endereco:cliente.endereco, motos:cliente.getMotos().map(m=>({modelo:m.getModelo, marca:m.getMarca, placa:m.getPlaca, ano:m.getAnoFabricacao, cor:m.getCor}))}; localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+    function load(){ const raw = localStorage.getItem(LS_KEY); if(!raw) return; try{ const d = JSON.parse(raw); cliente = new Cliente(d.nome, d.idade, d.cpf, d.endereco); (d.motos||[]).forEach(x=> cliente.addMoto(new Motos(x.modelo, x.marca, x.placa, x.ano, x.cor))); }catch{ /* ignore */ } }
+
+    // ======== UI refs ========
+    const outDesc = document.getElementById('outDesc');
+    const outLog = document.getElementById('outLog');
+    const status = document.getElementById('status');
+    const tbody = document.getElementById('tbody');
+    const contador = document.getElementById('contador');
+    const resBox = document.getElementById('resultadoConsulta');
+    const rawBox = document.getElementById('rawJson');
+
+    function log(msg){ outLog.textContent = `[${fmtTime()}] ${msg}\n` + outLog.textContent }
+    function render(){
+      outDesc.textContent = cliente ? cliente.descricao() : '(sem cliente)';
+      status.textContent = cliente ? 'Cliente ativo' : 'Sem cliente';
+      tbody.innerHTML = '';
+      const motos = cliente ? cliente.getMotos() : [];
+      motos.forEach(m=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${m.getMarca}</td><td>${m.getModelo}</td><td><code>${m.getPlaca}</code></td><td>${m.getAnoFabricacao}</td><td>${m.getCor}</td>
+          <td>
+            <div class="actions">
+              <button class="ghost act-fill" data-p="${m.getPlaca}">Preencher</button>
+              <button class="ghost act-find" data-p="${m.getPlaca}">Consultar</button>
+              <button class="danger act-del" data-p="${m.getPlaca}">Remover</button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+      contador.textContent = `${motos.length} moto(s)`;
+      save();
+    }
+
+    // ======== Eventos Cliente ========
+    document.getElementById('formCliente').addEventListener('submit', e=>{
+      e.preventDefault();
+      const nome=document.getElementById('nome').value.trim();
+      const idade=parseInt(document.getElementById('idade').value||'0',10);
+      const cpf=document.getElementById('cpf').value.trim();
+      const endereco=document.getElementById('endereco').value.trim();
+      if(!cliente){ cliente = new Cliente(nome, idade, cpf, endereco); toast('Cliente criado.'); log(`Cliente criado: ${nome}`);} else { cliente.nomeCompleto=nome; cliente.idade=idade; cliente.cpf=cpf; cliente.endereco=endereco; toast('Dados do cliente atualizados.'); log('Cliente atualizado');}
+      render();
+    });
+
+    document.getElementById('btnSeed').addEventListener('click', ()=>{
+      cliente = new Cliente('Adalberto Carlos', 27, '70520754409', 'Rua Vinte Quatro, N: 70');
+      try{ cliente.addMoto(new Motos('Titan 160', 'Honda', 'ABC-1234', 2022, 'Vermelha')); cliente.addMoto(new Motos('Fazer 250', 'Yamaha', 'DEF-5678', 2021, 'Azul')); toast('Exemplo carregado.'); log('Seed OK'); }catch(err){ toast('Erro no seed'); log('Seed: '+err.message); }
+      document.getElementById('nome').value=cliente.nomeCompleto; document.getElementById('idade').value=cliente.idade; document.getElementById('cpf').value=cliente.cpf; document.getElementById('endereco').value=cliente.endereco;
+      render();
+    });
+    document.getElementById('btnLimpar').addEventListener('click', ()=>{ if(confirm('Limpar todos os dados salvos?')){ localStorage.removeItem(LS_KEY); cliente=null; toast('Dados limpos.'); render(); }});
+
+    // ======== Adicionar ========
+    document.getElementById('formAddMoto').addEventListener('submit', e=>{
+      e.preventDefault(); if(!cliente){ toast('Crie o cliente primeiro.'); return; }
+      try{
+        const m = new Motos(
+          document.getElementById('modelo').value.trim(),
+          document.getElementById('marca').value.trim(),
+          document.getElementById('placa').value.trim().toUpperCase(),
+          parseInt(document.getElementById('ano').value,10),
+          document.getElementById('cor').value.trim()
+        );
+        if(!Cliente.valida(m.getPlaca)) throw new Error('Placa inválida. Use ABC-1234 (antiga) ou ABC1D23 (Mercosul).');
+        cliente.addMoto(m); toast('Moto adicionada.'); log(`Add: ${m.getMarca} ${m.getModelo} (${m.getPlaca})`); e.target.reset(); render();
+      }catch(err){ toast('Erro: '+err.message); log('Erro add: '+err.message); }
+    });
+
+    // ======== Atualizar ========
+    document.getElementById('formUpdateMoto').addEventListener('submit', e=>{
+      e.preventDefault(); if(!cliente){ toast('Crie o cliente primeiro.'); return; }
+      const dados = {}; const placaAtual=document.getElementById('placaAtual').value.trim(); const novaPlaca=document.getElementById('novaPlaca').value.trim(); const modelo=document.getElementById('novoModelo').value.trim(); const marca=document.getElementById('novaMarca').value.trim(); const ano=document.getElementById('novoAno').value; const cor=document.getElementById('novaCor').value.trim();
+      if(novaPlaca) dados.novaPlaca = novaPlaca.toUpperCase(); if(modelo) dados.modelo=modelo; if(marca) dados.marca=marca; if(ano) dados.anoFabricacao=parseInt(ano,10); if(cor) dados.cor=cor;
+      try{ const ok = cliente.atualizarMoto(placaAtual, dados); if(ok){ toast('Moto atualizada.'); log('Update OK: '+placaAtual); render(); } else { toast('Moto não encontrada.'); log('Update: não encontrada'); } }catch(err){ toast('Erro: '+err.message); log('Update erro: '+err.message); }
+    });
+
+    // ======== Remover (com modal) ========
+    const dlgDel = document.getElementById('dlgDel'); let delTarget=null; document.getElementById('btnCancelDel').onclick = ()=> dlgDel.close(); document.getElementById('btnConfirmDel').onclick = ()=>{ if(delTarget && cliente){ const ok = cliente.removerMoto(delTarget); if(ok){ toast('Moto removida.'); log('Removida: '+delTarget); } else { toast('Moto não encontrada.'); } } dlgDel.close(); delTarget=null; render(); };
+
+    tbody.addEventListener('click', (e)=>{
+      const b = e.target.closest('button'); if(!b) return; const placa = b.getAttribute('data-p');
+      if(b.classList.contains('act-fill')){ document.getElementById('placaAtual').value = placa; const m = cliente.buscarMotoPorPlaca(placa); if(m){ document.getElementById('novaPlaca').value=''; document.getElementById('novoModelo').value=m.getModelo; document.getElementById('novaMarca').value=m.getMarca; document.getElementById('novoAno').value=m.getAnoFabricacao; document.getElementById('novaCor').value=m.getCor; toast('Formulário preenchido.'); }
+      }
+      if(b.classList.contains('act-find')){ document.getElementById('placaConsulta').value = placa; pipelineConsulta(placa); document.scrollingElement.scrollTo({top: document.body.scrollHeight, behavior:'smooth'}); }
+      if(b.classList.contains('act-del')){ document.getElementById('delPlaca').textContent = placa; delTarget = placa; dlgDel.showModal(); }
+    });
+
+    // ======== Consulta de Placa (local + API) ========
+    function parseHeaders(str){
+      const headers = {}; (str||'').split(/\n+/).map(l=>l.trim()).filter(Boolean).forEach(l=>{ const i=l.indexOf(':'); if(i>0){ const k=l.slice(0,i).trim(); const v=l.slice(i+1).trim(); headers[k]=v; } }); return headers;
+    }
+    function buildUrl(tpl, placa){ return (tpl||'').replaceAll('{PLACA}', encodeURIComponent(placa.toUpperCase())); }
+    function getField(obj, keys){ for(const k of keys){ if(obj && Object.prototype.hasOwnProperty.call(obj,k)) return obj[k]; } if(obj){ const map = Object.keys(obj).reduce((a,k)=>{a[k.toLowerCase()]=obj[k]; return a;},{}); for(const k of keys){ const v = map[String(k).toLowerCase()]; if(v!==undefined) return v; } } return undefined; }
+
+    function similares(pl){ if(!cliente) return []; const n=Cliente.normalize(pl); return cliente.getMotos().map(m=>m.getPlaca).filter(p=>Cliente.normalize(p).startsWith(n.slice(0,3))).filter(p=>Cliente.normalize(p)!==Cliente.normalize(pl)).slice(0,5); }
+
+    function renderResultados(items){ resBox.innerHTML=''; items.forEach(it=>{ const line=document.createElement('div'); line.className='result-line'; const left=document.createElement('div'); left.innerHTML = `<div><strong>${it.titulo}</strong></div><div class="muted">${it.sub||''}</div>`; const actions=document.createElement('div'); actions.className='actions'; if(it.copiar){ const b=document.createElement('button'); b.className='ghost'; b.textContent='Copiar dados'; b.onclick=()=>{ navigator.clipboard.writeText(it.copiar); toast('Dados copiados.'); }; actions.appendChild(b); } if(it.preencher){ const f=document.createElement('button'); f.className='ghost'; f.textContent='Preencher atualização'; f.onclick=()=>{ document.getElementById('placaAtual').value=it.preencher; const m=cliente?.buscarMotoPorPlaca(it.preencher); if(m){ document.getElementById('novaPlaca').value=m.getPlaca; document.getElementById('novoModelo').value=m.getModelo; document.getElementById('novaMarca').value=m.getMarca; document.getElementById('novoAno').value=m.getAnoFabricacao; document.getElementById('novaCor').value=m.getCor; toast('Formulário preenchido.'); } }; actions.appendChild(f); } if(it.adicionar){ const a=document.createElement('button'); a.className='ok'; a.textContent='Adicionar ao cadastro'; a.onclick=()=>{ try{ const x=it.adicionar; const moto=new Motos(x.modelo||'—', x.marca||'—', x.placa||document.getElementById('placaConsulta').value.toUpperCase(), parseInt(x.ano||new Date().getFullYear(),10), x.cor||'—'); cliente.addMoto(moto); toast('Moto adicionada via API.'); log('Add via API: '+moto.getPlaca); render(); }catch(e){ toast('Erro ao adicionar: '+e.message); } }; actions.appendChild(a); }
+      line.appendChild(left); line.appendChild(actions); resBox.appendChild(line); }); }
+
+    function consultaLocal(placa){
+      const items=[]; if(!cliente){ renderResultados([{titulo:'Nenhum cliente ativo', sub:'Crie um cliente para consultar'}]); return; }
+      const p = placa.trim().toUpperCase(); if(!p){ renderResultados([{titulo:'Digite uma placa', sub:'Use ABC-1234 ou ABC1D23'}]); return; }
+      if(!Cliente.valida(p)){ renderResultados([{titulo:'Formato de placa inválido', sub:'Padrões aceitos: ABC-1234 ou ABC1D23'}]); return; }
+      const m = cliente.buscarMotoPorPlaca(p);
+      if(m){ items.push({titulo:`Local: ${m.getMarca} ${m.getModelo} (${m.getPlaca})`, sub:`Ano ${m.getAnoFabricacao} • ${m.getCor}`, preencher:m.getPlaca, copiar:`${m.getMarca} ${m.getModelo} ${m.getPlaca} ${m.getAnoFabricacao} ${m.getCor}`}); }
+      else { items.push({titulo:'Local: não encontrada', sub:'Essa placa não está cadastrada neste cliente.'}); const sug = similares(p); if(sug.length){ items.push({titulo:'Talvez você quis dizer…', sub:sug.join(', ')}) } }
+      renderResultados(items);
+    }
+
+    async function consultaExternaAPI(placa){
+      const urlTpl = document.getElementById('apiUrl').value.trim();
+      if(!urlTpl){ toast('Defina a URL base da API.'); return null; }
+      const method = document.getElementById('apiMethod').value || 'GET';
+      const timeout = Math.max(300, parseInt(document.getElementById('apiTimeout').value||'7000',10));
+      const headers = (function parse(){ const o={}; (document.getElementById('apiHeaders').value||'').split(/\n+/).map(l=>l.trim()).filter(Boolean).forEach(l=>{ const i=l.indexOf(':'); if(i>0){ o[l.slice(0,i).trim()]=l.slice(i+1).trim(); } }); return o; })();
+      const url = buildUrl(urlTpl, placa);
+      const controller = new AbortController();
+      const t = setTimeout(()=>controller.abort(), timeout);
+      let body = undefined;
+      if(method === 'POST'){
+        const bodyTpl = document.getElementById('apiBody').value || '{}';
+        try{ body = bodyTpl.replaceAll('{PLACA}', placa.toUpperCase()); }catch{ body = bodyTpl; }
+        if(!headers['Content-Type'] && !headers['content-type']) headers['Content-Type'] = 'application/json';
+      }
+      try{
+        const resp = await fetch(url, { method, headers, body, signal: controller.signal });
+        clearTimeout(t);
+        const ct = resp.headers.get('content-type')||'';
+        const data = ct.includes('application/json') ? await resp.json() : await resp.text();
+        rawBox.style.display='block';
+        rawBox.textContent = typeof data==='string' ? data : JSON.stringify(data, null, 2);
+        if(!resp.ok){ throw new Error(`HTTP ${resp.status} — ${resp.statusText}`); }
+        const item = Array.isArray(data) ? (data[0]||{}) : (data?.data || data);
+        const result = {
+          placa: getField(item, ['placa','license_plate','plate']),
+          marca: getField(item, ['marca','brand','make','fabricante']),
+          modelo: getField(item, ['modelo','model']),
+          ano: getField(item, ['ano','anoFabricacao','year','ano_modelo','anoModelo']),
+          cor: getField(item, ['cor','color'])
+        };
+        return result;
+      }catch(err){
+        clearTimeout(t);
+        toast('Falha na consulta externa');
+        log('API: '+(err.name==='AbortError' ? 'timeout' : err.message));
+        renderResultados([{titulo:'Externa: erro', sub:(err.name==='AbortError'?'Tempo esgotado':err.message)}]);
+        return null;
+      }
+    }
+
+    async function pipelineConsulta(placa){
+      resBox.innerHTML=''; rawBox.style.display='none';
+      consultaLocal(placa);
+      const apiRes = await consultaExternaAPI(placa);
+      if(apiRes){
+        const extItem = { titulo:`Externa: ${(apiRes.marca||'—')} ${(apiRes.modelo||'—')} (${(apiRes.placa||placa).toUpperCase()})`, sub:`Ano
+</html>
