@@ -149,13 +149,46 @@
 
                 const mainContent = document.querySelector('main');
                 mainContent.style.padding = '5em';
-                mainContent.style.backgroundColor = '#e0e0e0';
+                mainContent.style.backgroundColor = '#778899';
 
 
                 // Manipulação de Conteúdo
 
                 const h1Element = document.querySelector('h1');
                 h1Element.textContent = 'Título Atualizado Dinamicamente'
+
+                //Manipulação do Atributos
+                const imgElements = document.querySelector('img')
+                imgElements.setAttribute('alert','Imagem de Exemplo Atualizada');
+                imgElements.setAttribute('src' , 'https://via.placeholder.com/200');
+
+
+                // Manipulação de Eventos
+                // Mostrar um aviso do botão de "Enviar" uma mensagem informando que foi enviado
+
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.addEventListener('click',function(event){
+
+                    event.preventDefault();
+                    alert('Formulário emviado!');
+
+                });
+
+                // Navegação do DOM
+
+                const secondSection = document.querySelectorAll('section')[1];
+                const nextSection = secondSection.nextElementSibling;
+                if(nextSection){
+
+                    nextSection.style.border = '2px dashed #000 ';
+
+                }
+
+                // Remoção de Elementos
+
+                const footerElement = document.querySelector('footer');
+                footerElement.remove();
+
             </script>
         </body>
     </html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor e Visualizador de JSON</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    button {
+      margin: 10px 0;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    .erro {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Editor e Visualizador de JSON</h2>
+  
+  <p>Edite o JSON abaixo e clique em "Visualizar JSON":</p>
+  <textarea id="entradaJSON">{
+  "nome": "Ana",
+  "idade": 30,
+  "profissao": "Professora"
+}</textarea>
+  
+  <br>
+  <button onclick="mostrarJSON()">Visualizar JSON</button>
+  
+  <h3>Saída:</h3>
+  <pre id="saida"></pre>
+  <p id="erro" class="erro"></p>
+
+  <script>
+    function mostrarJSON() {
+      let entrada = document.getElementById("entradaJSON").value;
+      let saida = document.getElementById("saida");
+      let erro = document.getElementById("erro");
+      
+      try {
+        // Tenta converter a string em objeto JSON
+        let objeto = JSON.parse(entrada);
+
+        // Converte de volta para string formatada
+        saida.textContent = JSON.stringify(objeto, null, 2);
+        erro.textContent = ""; // limpa erro se estiver correto
+      } catch (e) {
+        // Mostra erro de sintaxe
+        erro.textContent = "⚠️ JSON inválido: " + e.message;
+        saida.textContent = "";
+      }
+    }
+  </script>
+</body>
+</html>
