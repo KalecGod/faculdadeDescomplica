@@ -45,7 +45,7 @@ body {
 /* Sombra simples */
 .simple-shadow {
     /* Adiciona uma sombra com leve desvio e suavidade */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Sombra com propagação */
